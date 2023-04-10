@@ -259,11 +259,12 @@ def main():
         oy.append(60.0 - i)
 
     if show_animation:  # pragma: no cover
+        #show map 
         plt.plot(ox, oy, ".k")
         plt.plot(sx, sy, "og")
         plt.plot(gx, gy, "xb")
-        plt.grid(True)
-        plt.axis("equal")
+        plt.grid(True)#显示划分格子
+        plt.axis("equal")#x轴 y轴划分单位长度相同
 
     greedybestfirst = BestFirstSearchPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = greedybestfirst.planning(sx, sy, gx, gy)

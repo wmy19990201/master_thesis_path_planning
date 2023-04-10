@@ -27,10 +27,10 @@ class BreadthFirstSearchPlanner:
         rr: robot radius[m]
         """
 
-        self.reso = reso
-        self.rr = rr
-        self.calc_obstacle_map(ox, oy)
-        self.motion = self.get_motion_model()
+        self.reso = reso#grid resolutuib
+        self.rr = rr#robot radius
+        self.calc_obstacle_map(ox, oy)#定义障碍物地图
+        self.motion = self.get_motion_model()#定义每一步的移动输入
 
     class Node:
         def __init__(self, x, y, cost, parent_index, parent):
@@ -60,25 +60,25 @@ class BreadthFirstSearchPlanner:
         """
 
         nstart = self.Node(self.calc_xyindex(sx, self.minx),
-                           self.calc_xyindex(sy, self.miny), 0.0, -1, None)
+                           self.calc_xyindex(sy, self.miny), 0.0, -1, None)#x grid, y grid, cost, parent index, parent node
         ngoal = self.Node(self.calc_xyindex(gx, self.minx),
                           self.calc_xyindex(gy, self.miny), 0.0, -1, None)
 
-        open_set, closed_set = dict(), dict()
-        open_set[self.calc_grid_index(nstart)] = nstart
+        open_set, closed_set = dict(), dict()#set: 一维index->node
+        open_set[self.calc_grid_index(nstart)] = nstart#初始化：起点入队
 
         while 1:
             if len(open_set) == 0:
                 print("Open set is empty..")
                 break
 
-            current = open_set.pop(list(open_set.keys())[0])
+            current = open_set.pop(list(open_set.keys())[0])#弹出队头元素
 
-            c_id = self.calc_grid_index(current)
+            c_id = self.calc_grid_index(current)#grid一维index
 
             closed_set[c_id] = current
 
-            # show graph
+            # show graph 动态展示
             if show_animation:  # pragma: no cover
                 plt.plot(self.calc_grid_position(current.x, self.minx),
                          self.calc_grid_position(current.y, self.miny), "xc")
@@ -90,12 +90,14 @@ class BreadthFirstSearchPlanner:
                 if len(closed_set.keys()) % 10 == 0:
                     plt.pause(0.001)
 
+            #终止条件
             if current.x == ngoal.x and current.y == ngoal.y:
                 print("Find goal")
                 ngoal.parent_index = current.parent_index
                 ngoal.cost = current.cost
                 break
 
+            #BFS扩展节点
             # expand_grid search grid based on motion model
             for i, _ in enumerate(self.motion):
                 node = self.Node(current.x + self.motion[i][0],
@@ -126,6 +128,9 @@ class BreadthFirstSearchPlanner:
 
         return rx, ry
 
+    #input:格子index, minp(minx/miny)
+    #output:pos[m]
+    #index->pos[m]
     def calc_grid_position(self, index, minp):
         """
         calc grid position
@@ -137,16 +142,25 @@ class BreadthFirstSearchPlanner:
         pos = index * self.reso + minp
         return pos
 
+    #input:x或者y方向上的长度(m)
+    #output:x或者y方向上的格点index
+    #pos[m] -> index
     def calc_xyindex(self, position, min_pos):
-        return round((position - min_pos) / self.reso)
+        return round((position - min_pos) / self.reso)#round--四舍五入为整数
 
+    #INPUT:NODE
+    #output:grid的一维index
     def calc_grid_index(self, node):
         return (node.y - self.miny) * self.xwidth + (node.x - self.minx)
 
+    #检验搜索到的节点是否合法（碰撞检测、节点是否越界）
+    #input:node
+    #output:bool
     def verify_node(self, node):
-        px = self.calc_grid_position(node.x, self.minx)
+        px = self.calc_grid_position(node.x, self.minx)#[m]
         py = self.calc_grid_position(node.y, self.miny)
 
+        #检查node是否在地图范围内
         if px < self.minx:
             return False
         elif py < self.miny:
@@ -164,15 +178,16 @@ class BreadthFirstSearchPlanner:
 
     def calc_obstacle_map(self, ox, oy):
 
-        self.minx = round(min(ox))
-        self.miny = round(min(oy))
-        self.maxx = round(max(ox))
-        self.maxy = round(max(oy))
+        self.minx = round(min(ox))#ox - x position list of Obstacles [m] minx- min index of x position list of Obstacles 
+        self.miny = round(min(oy))# oy - min index of y position list of Obstacles 
+        self.maxx = round(max(ox))#max index of x position list of Obstacles 
+        self.maxy = round(max(oy))#max index of x position list of Obstacles 
         print("min_x:", self.minx)
         print("min_y:", self.miny)
         print("max_x:", self.maxx)
         print("max_y:", self.maxy)
 
+        #地图x方向、y方向跨越的grid数目
         self.xwidth = round((self.maxx - self.minx) / self.reso)
         self.ywidth = round((self.maxy - self.miny) / self.reso)
         print("x_width:", self.xwidth)
@@ -180,19 +195,19 @@ class BreadthFirstSearchPlanner:
 
         # obstacle map generation
         self.obmap = [[False for _ in range(self.ywidth)]
-                      for _ in range(self.xwidth)]
+                      for _ in range(self.xwidth)]#初始化地图，每个grid都是false
         for ix in range(self.xwidth):
             x = self.calc_grid_position(ix, self.minx)
             for iy in range(self.ywidth):
                 y = self.calc_grid_position(iy, self.miny)
-                for iox, ioy in zip(ox, oy):
-                    d = math.hypot(iox - x, ioy - y)
-                    if d <= self.rr:
+                for iox, ioy in zip(ox, oy):#zip(ox,oy) 列表（i,j） i:ox, j:oy
+                    d = math.hypot(iox - x, ioy - y)#返回从原点到(iox - x, ioy - y)的距离，即（iox,ioy）到(x,y)的距离
+                    if d <= self.rr:#（iox,ioy）到(x,y)的距离小于机器人半径，认为该grid是obstacle
                         self.obmap[ix][iy] = True
                         break
 
     @staticmethod
-    def get_motion_model():
+    def get_motion_model():#上下 左右 左上 左下 右上 右下
         # dx, dy, cost
         motion = [[1, 0, 1],
                   [0, 1, 1],
@@ -217,7 +232,7 @@ def main():
     grid_size = 2.0  # [m]
     robot_radius = 1.0  # [m]
 
-    # set obstacle positions
+    # set obstacle positions[m] 障碍物在这里设置，通过calc_obstacle_map()生成相应地图
     ox, oy = [], []
     for i in range(-10, 60):
         ox.append(i)

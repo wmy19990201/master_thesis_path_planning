@@ -15,9 +15,9 @@ from Search_2D import env
 
 class Plotting:
     def __init__(self, xI, xG):
-        self.xI, self.xG = xI, xG
+        self.xI, self.xG = xI, xG#start goal坐标
         self.env = env.Env()
-        self.obs = self.env.obs_map()
+        self.obs = self.env.obs_map()#导入地图
 
     def update_obs(self, obs):
         self.obs = obs

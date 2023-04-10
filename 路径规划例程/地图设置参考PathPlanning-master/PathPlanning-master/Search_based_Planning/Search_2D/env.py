@@ -9,7 +9,7 @@ class Env:
         self.x_range = 51  # size of background
         self.y_range = 31
         self.motions = [(-1, 0), (-1, 1), (0, 1), (1, 1),
-                        (1, 0), (1, -1), (0, -1), (-1, -1)]
+                        (1, 0), (1, -1), (0, -1), (-1, -1)]#这是啥？一步移动的位置改变量？
         self.obs = self.obs_map()
 
     def update_obs(self, obs):

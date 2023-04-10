@@ -18,18 +18,18 @@ class AStar:
     """AStar set the cost + heuristics as the priority
     """
     def __init__(self, s_start, s_goal, heuristic_type):
-        self.s_start = s_start
-        self.s_goal = s_goal
-        self.heuristic_type = heuristic_type
+        self.s_start = s_start#起点 （x,x）
+        self.s_goal = s_goal#终点 (x,x)
+        self.heuristic_type = heuristic_type#string "manhattan"或者mahattan
 
-        self.Env = env.Env()  # class Env
+        self.Env = env.Env()  # class Env 该类用来生成带有障碍物的地图
 
-        self.u_set = self.Env.motions  # feasible input set
+        self.u_set = self.Env.motions  # feasible input set 移动方向
         self.obs = self.Env.obs  # position of obstacles
 
         self.OPEN = []  # priority queue / OPEN set
         self.CLOSED = []  # CLOSED set / VISITED order
-        self.PARENT = dict()  # recorded parent
+        self.PARENT = dict()  # recorded parent 用于回溯最短路径
         self.g = dict()  # cost to come
 
     def searching(self):
@@ -37,15 +37,15 @@ class AStar:
         A_star Searching.
         :return: path, visited order
         """
-
+        #初始化
         self.PARENT[self.s_start] = self.s_start
         self.g[self.s_start] = 0
         self.g[self.s_goal] = math.inf
         heapq.heappush(self.OPEN,
-                       (self.f_value(self.s_start), self.s_start))
+                       (self.f_value(self.s_start), self.s_start))#优先队列算法
 
         while self.OPEN:
-            _, s = heapq.heappop(self.OPEN)
+            _, s = heapq.heappop(self.OPEN)#s:openlist中cost最小的节点
             self.CLOSED.append(s)
 
             if s == self.s_goal:  # stop condition
@@ -140,7 +140,7 @@ class AStar:
 
         return math.hypot(s_goal[0] - s_start[0], s_goal[1] - s_start[1])
 
-    def is_collision(self, s_start, s_end):
+    def is_collision(self, s_start, s_end):#和地图模块交互函数 is_collision == true -> cost = inf
         """
         check if the line segment (s_start, s_end) is collision.
         :param s_start: start node
@@ -164,7 +164,7 @@ class AStar:
 
         return False
 
-    def f_value(self, s):
+    def f_value(self, s):#计算某个节点的cost f值
         """
         f = g + h. (g: Cost to come, h: heuristic value)
         :param s: current state
@@ -191,7 +191,7 @@ class AStar:
 
         return list(path)
 
-    def heuristic(self, s):
+    def heuristic(self, s):#启发式函数
         """
         Calculate heuristic.
         :param s: current node (state)
@@ -211,11 +211,11 @@ def main():
     s_start = (5, 5)
     s_goal = (45, 25)
 
-    astar = AStar(s_start, s_goal, "euclidean")
-    plot = plotting.Plotting(s_start, s_goal)
+    astar = AStar(s_start, s_goal, "euclidean")#使用A*算法 输入起点终点坐标 使用欧式距离寻路
+    plot = plotting.Plotting(s_start, s_goal)#创建作图类
 
-    path, visited = astar.searching()
-    plot.animation(path, visited, "A*")  # animation
+    path, visited = astar.searching()#生成最优路径、访问过的栅格
+    plot.animation(path, visited, "A*")  # animation 
 
     # path, visited = astar.searching_repeated_astar(2.5)               # initial weight e = 2.5
     # plot.animation_ara_star(path, visited, "Repeated A*")
